@@ -14,8 +14,8 @@ def make_merge_frame(target_season_num:int,games:pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame: Game data for season t with aggregated player stats from season t-1
     """
-    rosters = pd.read_parquet(f"../data/roster_{target_season_num}.parquet")
-    stats = pd.read_parquet(f"../data/player_stats_{target_season_num-1}.parquet")
+    rosters = pd.read_parquet(f"data/roster_{target_season_num}.parquet")
+    stats = pd.read_parquet(f"data/player_stats_{target_season_num-1}.parquet")
     rosters['player_display_name'] = rosters['full_name'] 
     target_season = games[games['season']==target_season_num].copy()#[(games['season']==2023)&(games['week']==1)]
 
@@ -92,3 +92,6 @@ def main() -> None:
     all_dat.to_csv("data/model_data.csv",index=False)
 
     return
+
+if __name__=='__main__':
+    main()
