@@ -17,18 +17,23 @@ def main() -> None:
 
     model_data = data[data['season']<2023].copy()
 
-    features = [
-        i for i in model_data.columns 
-        if i not in 
-        ['week','away_team','home_team','away_score','home_score','result','season',]
+    exclusions = ['week','away_team','home_team','away_score','home_score','result','season',]
+
+    first_features = [
+        i for i in model_data.columns if 
+        (i not in exclusions)&
+        ('_team_id_' not in i)
     ]
     target = 'result'
 
-    Xtrain,Xtest,ytrain,ytest=train_test_split(model_data[features],
-                                            model_data[target],
-                                            test_size=.2,
-                                            random_state=42,
-                                            shuffle=True)
+    Xtrain,Xtest,ytrain,ytest=train_test_split(model_data[first_features],model_data[target],test_size=.2,random_state=42,shuffle=True)
+
+    corr = pd.concat([Xtrain,ytrain],axis=1).corr(numeric_only=True)[target].sort_values()
+    corr.sort_values(ascending=False)
+    feats_used = corr[(abs(corr)>.05)&(abs(corr)<1)]
+
+    features = [i for i in feats_used.index if i != target]
+    Xtrain,Xtest,ytrain,ytest=train_test_split(model_data[features],model_data[target],test_size=.2,random_state=42,shuffle=True)
 
     model = Pipeline(steps=[
         ('scaler',MinMaxScaler()),
