@@ -107,6 +107,37 @@ def make_merge_frame(games:pd.DataFrame) -> pd.DataFrame:
 
     merge = prep_frame.merge(away_team_stats,on=['away_team','season'],how='left').merge(home_team_stats,on=['home_team','season'],how='left')
 
+    away_result = merge[['season','week','away_team','result']].copy()
+    home_result = merge[['season','week','home_team','result']].copy()
+    away_result['result'] = -1*away_result['result']
+    away_result.columns = ['season','week','team','result']
+    home_result.columns = ['season','week','team','result']
+    away_result['h/a'] = 'away_team'
+    home_result['h/a'] = 'home_team'
+
+    results = pd.concat([away_result,home_result])
+
+    results.sort_values(by=['season','week'],ascending=[True,True],inplace=True)
+
+    results['result_not_nan'] = np.where(~results['result'].isna(),1,0)
+    results['result']=results['result'].fillna(0)
+
+    results['cumeresult']=results.groupby(['season','team'])['result'].cumsum( )
+    results['cumecount']=results.groupby(['season','team'])['result_not_nan'].cumsum()
+    results['cumemeanresult'] = results['cumeresult']/results['cumecount']
+
+    results['cumemeanresult_shift1'] = results.groupby(['season','team'])['cumemeanresult'].shift(1).fillna(0)
+
+    away_cume_result = results[results['h/a']=='away_team'][['season','week','team','cumemeanresult_shift1']].copy()
+    home_cume_result = results[results['h/a']=='home_team'][['season','week','team','cumemeanresult_shift1']].copy()
+
+    away_cume_result.columns = ['season','week','away_team','away_cumemeanresult_shift1']
+    home_cume_result.columns = ['season','week','home_team','home_cumemeanresult_shift1']
+
+    merge = merge.merge(home_cume_result,on=['season','week','home_team'],how='left').merge(
+        away_cume_result,on=['season','week','away_team'],how='left'
+    )
+
     return merge
 
 def main() -> None:
