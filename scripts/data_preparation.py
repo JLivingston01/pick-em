@@ -85,7 +85,7 @@ def make_merge_frame(games:pd.DataFrame) -> pd.DataFrame:
     roster_stats = all_rosters.merge(agg_stats,on=['player_display_name','merge_season'],how='inner')
 
     team_stats = roster_stats.groupby(['team','season']).agg({
-            i:'sum' for i in agg_stats.columns if i not in ['player_display_name','merge_season']
+            i:'mean' for i in agg_stats.columns if i not in ['player_display_name','merge_season']
         }).reset_index()
 
     team_stats.to_csv("data/seasonal_team_stats.csv",index=False)
@@ -137,6 +137,9 @@ def make_merge_frame(games:pd.DataFrame) -> pd.DataFrame:
     merge = merge.merge(home_cume_result,on=['season','week','home_team'],how='left').merge(
         away_cume_result,on=['season','week','away_team'],how='left'
     )
+
+    merge['coverage']=merge['result'] - merge['spread_line']
+    merge['cumemeanresult_diff'] = merge['home_cumemeanresult_shift1'] - merge['away_cumemeanresult_shift1']
 
     return merge
 
