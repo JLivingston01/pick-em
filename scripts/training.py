@@ -37,10 +37,10 @@ def main() -> None:
 
     model = Pipeline(steps=[
         ('scaler',MinMaxScaler()),
-        ('learner',MLPRegressor(random_state=42,hidden_layer_sizes=(100,100),activation='logistic',
+        ('learner',MLPRegressor(random_state=42,hidden_layer_sizes=(100),activation='logistic',
                                 alpha=0,batch_size=1,solver='sgd',learning_rate_init=.0001,
                                 tol=1e-8,
-                                n_iter_no_change=50,
+                                n_iter_no_change=100,
                         max_iter=4000,learning_rate='constant',shuffle=True,verbose=True,
                         early_stopping=True,
                         validation_fraction=.1))
